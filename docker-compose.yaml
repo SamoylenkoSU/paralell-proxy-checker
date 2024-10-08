@@ -1,0 +1,13 @@
+version: '3'
+services:
+  golang:
+    build: ./docker/golang
+    volumes:
+      - ./backend:/backend:rw
+    ports:
+      - 8000:8080
+    networks:
+      - backend
+
+networks:
+  backend:
