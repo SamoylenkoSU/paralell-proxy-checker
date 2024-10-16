@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 	"proxy-checker-server/api/service"
-	pb "proxy-checker-server/generated/grpc/proxy-checker-api.v1"
+	pb "proxy-checker-server/generated/grpc/proxy-checker.api"
 	"sync"
 
 	"google.golang.org/grpc"
@@ -35,7 +35,8 @@ func checkProxy(proxy string) *pb.ProxyCheckResult {
 				Type:       mapProxyType(proxyInfo.Type),
 				ExternalIp: proxyInfo.ExternalIp,
 				Country:    proxyInfo.Country,
-				Region:     proxyInfo.Region,
+				City:       proxyInfo.City,
+				Timeout:    proxyInfo.Timeout,
 			},
 		}
 	} else {
@@ -57,7 +58,7 @@ func (s *ApiServer) Check(
 
 	var result []*pb.ProxyCheckResult
 
-	var activeCounter int64 = 0
+	var activeCounter int32 = 0
 
 	for _, value := range request.Value {
 		wg.Add(1)
@@ -78,7 +79,7 @@ func (s *ApiServer) Check(
 
 	wg.Wait()
 	return &pb.ProxyResponse{
-		Total:       int64(len(result)),
+		Total:       int32(len(result)),
 		Active:      activeCounter,
 		CheckResult: result,
 	}, nil

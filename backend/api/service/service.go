@@ -13,20 +13,26 @@ const (
 	timeout  = 30
 )
 
+type IpApiData struct {
+	Country string
+	City    string
+	Query   string
+}
+
 type IpApiResponse struct {
-	Country    string
-	RegionName string
-	Query      string
+	Data    IpApiData
+	Timeout float64
 }
 
 type ProxyInfo struct {
 	Type       string
 	ExternalIp string
 	Country    string
-	Region     string
+	City       string
+	Timeout    float64
 }
 
-func getIpInfoWithProxy(proxy string, proxyType string) (result *IpApiResponse) {
+func getIpInfoWithProxy(proxy string, proxyType string) *IpApiResponse {
 	proxyUrl, error := url.Parse(proxyType + "://" + proxy)
 
 	if error != nil {
@@ -39,7 +45,9 @@ func getIpInfoWithProxy(proxy string, proxyType string) (result *IpApiResponse) 
 		Timeout:   timeout * time.Second,
 	}
 
+	start := time.Now()
 	response, error := httpClient.Get(ipApiUrl)
+	past := time.Since(start).Seconds()
 
 	if error != nil {
 		log.Printf("Proxy (%v) failed: %e", proxyUrl.String(), error)
@@ -53,19 +61,23 @@ func getIpInfoWithProxy(proxy string, proxyType string) (result *IpApiResponse) 
 
 	defer response.Body.Close()
 
-	json.NewDecoder(response.Body).Decode(&result)
+	data := IpApiData{}
 
-	log.Print(result)
+	json.NewDecoder(response.Body).Decode(&data)
 
-	return result
+	return &IpApiResponse{
+		Data:    data,
+		Timeout: past,
+	}
 }
 
 func mapResponse(response *IpApiResponse, proxyType string) *ProxyInfo {
 	return &ProxyInfo{
 		Type:       proxyType,
-		ExternalIp: response.Query,
-		Country:    response.Country,
-		Region:     response.RegionName,
+		ExternalIp: response.Data.Query,
+		Country:    response.Data.Country,
+		City:       response.Data.City,
+		Timeout:    response.Timeout,
 	}
 }
 

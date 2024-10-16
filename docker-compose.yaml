@@ -4,10 +4,13 @@ services:
     build: ./docker/golang
     volumes:
       - ./backend:/backend:rw
+      - ${SPECIFICATION_PATH}:/specification:rw
     ports:
       - 8000:8080
+      - 8001:8081
     networks:
       - backend
 
 networks:
   backend:
+    name: proxy-checker-net
