@@ -10,4 +10,4 @@ WORKDIR /backend
 RUN go install -mod=mod github.com/githubnemo/CompileDaemon
 RUN go install -mod=mod github.com/golang/protobuf/protoc-gen-go
 
-ENTRYPOINT CompileDaemon -command="./proxy-checker-server"
+ENTRYPOINT CompileDaemon -build="go build cmd/main.go" -command="./main"
